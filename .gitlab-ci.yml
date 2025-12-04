@@ -50,9 +50,6 @@ setup:
 
 validate:
   stage: validate
-  image:
-    name: containers.cisco.com/sriddell/shaw-custom-nac-vxlan:latest
-    pull_policy: always
   rules:
     - if: $CI_COMMIT_TAG == null
   script:
@@ -73,9 +70,6 @@ validate:
 
 deploy:
   stage: deploy
-  image:
-    name: containers.cisco.com/sriddell/shaw-custom-nac-vxlan:latest
-    pull_policy: always
   dependencies:
     - validate
   rules:
@@ -133,9 +127,6 @@ test-integration:
 
 pages:
   stage: document
-  image:
-    name: containers.cisco.com/sriddell/shaw-custom-nac-vxlan:latest
-    pull_policy: always
   dependencies:
     - test-integration
   needs:
