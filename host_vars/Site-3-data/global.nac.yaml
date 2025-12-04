@@ -1,0 +1,33 @@
+---
+vxlan:
+  fabric:
+    name: VXLAN_Site_3_Data
+    type: VXLAN_EVPN
+  global:
+    ibgp:
+      bgp_asn: "65023"
+      route_reflectors: 2
+      anycast_gateway_mac: 20:20:08:67:53:09
+      dns_servers:
+        - ip_address: 10.0.0.2
+          vrf: management
+      ntp_servers:
+        - ip_address: 10.55.0.2
+          vrf: management
+      vpc:
+        peer_keep_alive: management
+        peer_link_vlan: 3966
+        auto_recovery_time: 240
+        delay_restore_time: 150
+        peer_link_port_channel_id: 10
+        advertise_pip: true
+        domain_id_range: 1-100
+      bootstrap:
+        enable_bootstrap: true
+        enable_local_dhcp_server: true
+        dhcp_version: DHCPv4
+        dhcp_v4:
+          scope_start_address: 192.168.106.100
+          scope_end_address: 192.168.106.125
+          switch_mgmt_default_gw: 192.168.106.1
+          mgmt_prefix: 24

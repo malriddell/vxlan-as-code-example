@@ -1,0 +1,38 @@
+---
+vxlan:
+  policy:
+    policies:
+      - name: cisco_user
+        template_name: switch_user
+        template_vars:
+          USERNAME: "cisco"
+          PASSWORD: "5$CCDGOE$.uTdgTHLttYYgT7jHmsXWVytD0Lw0eU2xQusk5wGw65"
+      # - name: qos config
+      #   template_name: switch_freeform
+      #   filename: ./data/policies/qos.cfg
+
+    groups:
+      - name: users
+        priority: 500
+        policies:
+          - name: cisco_user
+    switches:
+      - name: Site-3_Leaf1-mgmt
+        groups:
+          - users
+
+      - name: Site-3_Leaf2-mgmt
+        groups:
+          - users
+
+      - name: Site-3_BGW1-mgmt
+        groups:
+          - users
+
+      - name: Site-3_Spine1-mgmt
+        groups:
+          - users
+
+      - name: Site-3_Spine2-mgmt
+        groups:
+          - users

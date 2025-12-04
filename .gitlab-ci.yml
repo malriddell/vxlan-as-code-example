@@ -1,0 +1,150 @@
+---
+image: mtarking/nac-vxlan:0.5.1rc1
+stages:
+  - setup
+  - validate
+  - deploy
+  - test
+  - document
+
+variables:
+  ND_HOST:
+    description: "Cisco ND HOST"
+  ND_DOMAIN:
+    description: "Cisco ND Domain"
+  ND_USERNAME:
+    description: "Cisco ND Username"
+  ND_PASSWORD:
+    description: "Cisco ND Password"
+  DC_VXLAN_SCHEMA:
+    description: "Path to the schema file"
+  DC_VXLAN_RULES:
+    description: "Path to the rules file"
+  NDFC_SW_USERNAME:
+    description: "Cisco NDFC Switch Username"
+  NDFC_SW_PASSWORD:
+    description: "Cisco NDFC Switch Password"
+  http_proxy: "http://proxy.esl.cisco.com:8080"
+  https_proxy: "http://proxy.esl.cisco.com:8080"
+  no_proxy: "localhost,127.0.0.1,.cisco.com,10.82.4.48,10.0.0.0/8"
+
+setup:
+  stage: setup
+  script:
+    - set -o pipefail && mkdir -p outputs/setup
+    - set -o pipefail && ansible --version  |& tee outputs/setup/setup_output.txt
+    - set -o pipefail && ansible-galaxy collection list |& tee outputs/setup/setup_output.txt
+  artifacts:
+    paths:
+      - inventory.yaml
+      - outputs/setup/setup_output.txt
+  cache: []
+  after_script:
+  - |
+    text="### [$CI_JOB_NAME] $CI_PROJECT_PATH - $CI_COMMIT_MESSAGE
+    * Trigger: $CI_PIPELINE_SOURCE
+    * Git SHA: $CI_COMMIT_SHA
+    * Status: $CI_JOB_STATUS
+    * Details URL: [Job Results]($CI_JOB_URL)"
+  - python3 tools/send-webex-message.py --room-id $ROOM_ID --token $WEBEX_TOKEN --artifacts-dir ./outputs/setup --zip-name $CI_JOB_NAME-artifacts.zip --message "$text"
+
+validate:
+  stage: validate
+  image:
+    name: containers.cisco.com/sriddell/shaw-custom-nac-vxlan:latest
+    pull_policy: always
+  rules:
+    - if: $CI_COMMIT_TAG == null
+  script:
+    - set -o pipefail && mkdir -p outputs/validate
+    - set -o pipefail && nac-validate -s ./schema/schema.yaml host_vars/Site-3-mgmt -v DEBUG |& tee ./outputs/validate/validate_output-Site-3-mgmt.txt
+  artifacts:
+    paths:
+      - outputs/validate/validate_output-Site-3-mgmt.txt
+  cache: []
+  after_script:
+  - |
+    text="### [$CI_JOB_NAME] $CI_PROJECT_PATH - $CI_COMMIT_MESSAGE
+    * Trigger: $CI_PIPELINE_SOURCE
+    * Git SHA: $CI_COMMIT_SHA
+    * Status: $CI_JOB_STATUS
+    * Details URL: [Job Results]($CI_JOB_URL)"
+  - python3 tools/send-webex-message.py --room-id $ROOM_ID --token $WEBEX_TOKEN --artifacts-dir ./outputs/validate --zip-name $CI_JOB_NAME-artifacts.zip --message "$text"
+
+deploy:
+  stage: deploy
+  image:
+    name: containers.cisco.com/sriddell/shaw-custom-nac-vxlan:latest
+    pull_policy: always
+  dependencies:
+    - validate
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - set -o pipefail && mkdir -p outputs/deploy
+    - set -o pipefail && ansible-playbook -i inventory.yaml vxlan.yaml --limit Site-3-mgmt --tags "cr_manage_interfaces,cr_manage_vrfs_networks,cr_manage_policy,cr_manage_links,cr_manage_edge_connections,rr_manage_interfaces,rr_manage_networks,rr_manage_vrfs,rr_manage_links,rr_manage_edge_connections,rr_manage_policy,role_validate,role_deploy" |& tee ./outputs/deploy/deploy_output-Site-3-mgmt.txt
+    - set -o pipefail && ansible-playbook -i inventory.yaml vxlan.yaml --limit Site-3-data |& tee ./outputs/deploy/deploy_output-Site-3-data.txt
+  artifacts:
+    when: always
+    paths:
+      - ./outputs/deploy/deploy_output-Site-3-mgmt.txt
+      - ./outputs/deploy/deploy_output-Site-3-data.txt
+  after_script:
+  - |
+    text="### [$CI_JOB_NAME] $CI_PROJECT_PATH - $CI_COMMIT_MESSAGE
+    * Trigger: $CI_PIPELINE_SOURCE
+    * Git SHA: $CI_COMMIT_SHA
+    * Status: $CI_JOB_STATUS
+    * Details URL: [Job Results]($CI_JOB_URL)"
+  - python3 tools/send-webex-message.py --room-id $ROOM_ID --token $WEBEX_TOKEN --artifacts-dir ./outputs/deploy --zip-name $CI_JOB_NAME-artifacts.zip --message "$text"
+
+
+test-integration:
+  stage: test
+  dependencies:
+    - deploy
+  needs:
+    - deploy
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - set -o pipefail && mkdir -p outputs/results
+    - set -o pipefail && nac-test -d ./host_vars/Site-3-mgmt -d ./group_vars/ndfc/defaults.yaml -t ./tests/templates  -o ./outputs/results/Site-3-mgmt/ |& tee ./outputs/results/test_output-Site-3-mgmt.txt
+    - set -o pipefail && nac-test -d ./host_vars/Site-3-data -d ./group_vars/ndfc/defaults.yaml -t ./tests/templates -o ./outputs/results/Site-3-data/ |& tee ./outputs/results/test_output-Site-3-data.txt
+  artifacts:
+    when: always
+    paths:
+      - outputs/results/Site-3-mgmt/*.htm
+      - outputs/results/Site-3-mgmt/xunit.xml
+      - outputs/results/Site-3-data/*.html
+      - outputs/results/Site-3-data/xunit.xml
+      - ./outputs/results/test_output-Site-3-mgmt.txt
+      - ./outputs/results/test_output-Site-3-data.txt
+    reports:
+      junit: ./outputs/results/Site-3-mgmt/xunit.xml
+  after_script:
+  - |
+    text="### [$CI_JOB_NAME] $CI_PROJECT_PATH - $CI_COMMIT_MESSAGE
+    * Trigger: $CI_PIPELINE_SOURCE
+    * Git SHA: $CI_COMMIT_SHA
+    * Status: $CI_JOB_STATUS
+    * Details URL: [Job Results]($CI_JOB_URL)"
+  - python3 tools/send-webex-message.py --room-id $ROOM_ID --token $WEBEX_TOKEN --artifacts-dir ./outputs/results --zip-name $CI_JOB_NAME-artifacts.zip --message "$text"
+
+pages:
+  stage: document
+  image:
+    name: containers.cisco.com/sriddell/shaw-custom-nac-vxlan:latest
+    pull_policy: always
+  dependencies:
+    - test-integration
+  needs:
+    - test-integration
+  script:
+    - python3 tools/gen_mkdocs.py --output_dir . host_vars/Site-3-mgmt --css_file tools/extra.css
+    - mkdocs build --site-dir public
+  artifacts:
+    paths:
+      - public
+  only:
+    - main

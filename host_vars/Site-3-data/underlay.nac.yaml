@@ -1,0 +1,39 @@
+---
+vxlan:
+  underlay:
+    general:
+      routing_protocol: is-is 
+      enable_ipv6_underlay: false
+      replication_mode: multicast
+      manual_underlay_allocation: true
+      underlay_routing_loopback_id: 0
+      underlay_vtep_loopback_id: 1
+      underlay_routing_protocol_tag: UNDERLAY
+      intra_fabric_interface_mtu: 9216
+      layer2_host_interface_mtu: 9216
+      unshut_host_interfaces: true
+    ipv4:
+      fabric_interface_numbering: unnumbered
+      subnet_mask: 31
+      underlay_routing_loopback_ip_range: 10.2.14.0/22
+      underlay_vtep_loopback_ip_range: 10.3.14.0/22
+      underlay_rp_loopback_ip_range: 10.254.254.0/24
+      underlay_subnet_ip_range: 10.15.0.0/16
+    ipv6:
+      enable_ipv6_link_local_address: false
+      underlay_subnet_mask: 126
+    isis:
+      level: level-1
+      net_area_number: "0001"
+      network_point_to_point: true
+      authentication_enable: false
+      authentication_key_id: 127
+      overload_bit: true
+      overload_bit_elapsed_time: 60
+    multicast:
+      underlay_rp_loopback_id: 250
+      underlay_primary_rp_loopback_id: 0
+      rendezvous_points: 2
+      rp_mode: asm
+      ipv4:
+        anycast_rp: 10.254.254.254

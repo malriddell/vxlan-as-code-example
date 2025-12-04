@@ -1,0 +1,27 @@
+---
+vxlan:
+  overlay_extensions:
+    vrf_lites:
+      - name: default_vrf_lite
+        vrf: default
+        switches:
+          - name: Site-3_BGW1-data
+            router_id: 10.2.14.21
+            bgp_peers:
+              - address: 172.16.13.1
+                remote_as: 65033
+                description: "WAN-Router Peer on Gig3"
+                disable_connected_check: false
+                remove_private_as: false
+                remove_private_as_all: false
+      - name: coke_vrf_lite
+        vrf: default
+        switches:
+          - name: Site-3_BGW1-data
+            router_id: 10.2.14.21
+            bgp_peers:
+              - address: 172.16.13.3
+                remote_as: 65033
+                disable_connected_check: false
+                remove_private_as: false
+                remove_private_as_all: false

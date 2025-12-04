@@ -1,0 +1,25 @@
+---
+vxlan:
+  fabric:
+    name: VXLAN_Site_3_Mgmt
+    type: VXLAN_EVPN
+  global:
+    ibgp:
+      bgp_asn: "65013"
+      route_reflectors: 2
+      anycast_gateway_mac: 12:34:56:78:90:00
+      dns_servers:
+        - ip_address: 10.0.0.2
+          vrf: management
+      ntp_servers:
+        - ip_address: 10.55.0.2
+          vrf: management
+      bootstrap:
+        enable_bootstrap: true
+        enable_local_dhcp_server: true
+        dhcp_version: DHCPv4
+        dhcp_v4:
+          scope_start_address: 192.168.105.100
+          scope_end_address: 192.168.105.125
+          switch_mgmt_default_gw: 192.168.105.1
+          mgmt_prefix: 24

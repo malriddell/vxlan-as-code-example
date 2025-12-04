@@ -1,0 +1,14 @@
+---
+vxlan:
+  overlay:
+    vrfs:
+      - name: coke
+        vrf_id: 150001
+        vlan_id: 2001
+        vrf_attach_group: coke_vrf
+    vrf_attach_groups:
+      - name: coke_vrf
+        switches:
+          - hostname: Site-3_Leaf1-data
+          - hostname: Site-3_Leaf2-data
+          - hostname: Site-3_BGW1-data

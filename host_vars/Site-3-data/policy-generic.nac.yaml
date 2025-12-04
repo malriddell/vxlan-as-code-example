@@ -1,0 +1,60 @@
+---
+vxlan:
+  policy:
+    policies:
+      - name: alias
+        filename: ./data/policies/alias.cfg
+
+      # - name: banner
+      #   template_name: banner
+      #   template_vars:
+      #     BANNER: |-
+      #       ***************************************************************************
+      #       *               Vxlan as Code demo - fabric EVPN Site-3 Mgmt              *
+      #       ***************************************************************************
+      #     BANNERDELIMITER: "_"
+      #     TYPE: "motd"
+      - name: banner
+        template_name: banner
+        template_vars:
+          BANNER: "VXLAN as Code Banner. Site 3 Data Fabric"
+          BANNERDELIMITER: "_"
+          TYPE: "motd"
+      # - name: qos config
+      #   template_name: switch_freeform
+      #   filename: ./data/policies/qos.cfg
+
+      - name: additional users
+        filename: ./data/policies/users.cfg
+      #   template_vars:
+      #     CONFIG: |-
+      #       username cisco privilege 15 secret cisco
+
+    groups:
+      - name: all
+        priority: 500
+        policies:
+          - name: alias
+          - name: banner
+          - name: additional users
+          # - name: qos config
+    switches:
+      - name: Site-3_Leaf1-data
+        groups:
+          - all
+
+      - name: Site-3_Leaf2-data
+        groups:
+          - all
+
+      - name: Site-3_BGW1-data
+        groups:
+          - all
+
+      - name: Site-3_Spine1-data
+        groups:
+          - all
+
+      - name: Site-3_Spine2-data
+        groups:
+          - all

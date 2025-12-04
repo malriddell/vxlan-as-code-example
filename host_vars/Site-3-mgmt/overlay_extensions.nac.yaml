@@ -1,0 +1,16 @@
+---
+vxlan:
+  overlay_extensions:
+    vrf_lites:
+      - name: Infrastructure_VRF-Lite
+        vrf: infrastructure
+        switches:
+          - name: Site-3_BGW1-mgmt
+            router_id: 10.2.12.24
+            bgp_peers:
+              - address: 172.16.0.101
+                remote_as: 65033
+                description: "WAN-Router Gig1"
+                disable_connected_check: false
+                remove_private_as: false
+                remove_private_as_all: false

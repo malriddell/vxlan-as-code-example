@@ -1,0 +1,105 @@
+---
+vxlan:
+  topology:
+    switches:
+      - name: Site-3_Spine1-mgmt
+        serial_number: 92GY3BUY0OI
+        role: spine
+        management:
+          management_ipv4_address: "10.2.12.5"
+        poap:
+          bootstrap: false
+      - name: Site-3_Spine2-mgmt
+        serial_number: 9RUFO8B78VH
+        role: spine
+        management:
+          management_ipv4_address: "10.2.12.6"
+        poap:
+          bootstrap: false
+      - name: Site-3_Leaf1-mgmt
+        serial_number: 9GRV6RJ1EQ2
+        role: leaf
+        management:
+          management_ipv4_address: "10.2.12.11"
+        poap:
+          bootstrap: false
+        interfaces:
+          - name: loopback100
+            mode: loopback
+            description: "DHCP Loopback for Net_Infra"
+            enabled: true
+            vrf: infrastructure
+            ipv4_address: 192.168.200.11
+            ipv4_route_tag: 12345
+          - name: Ethernet1/6
+            description: "Access to Site-3-Spine-1/mgmt0: Net_Infra"
+            mode: access
+            access_vlan: 201
+            mtu: default
+            spanning_tree_portfast: true
+            enable_bpdu_guard: true
+            enabled: true
+          - name: Ethernet1/7
+            description: "Access to Site-3-Spine-2/mgmt0: Net_Infra"
+            mode: access
+            access_vlan: 201
+            mtu: default
+            spanning_tree_portfast: true
+            enable_bpdu_guard: true
+            enabled: true
+      - name: Site-3_Leaf2-mgmt
+        serial_number: 9BBW6ETWTSX
+        role: leaf
+        management:
+          management_ipv4_address: "10.2.12.12"
+        poap:
+          bootstrap: false
+        interfaces:
+          - name: loopback100
+            mode: loopback
+            description: "DHCP Loopback for Net_Infra"
+            enabled: true
+            vrf: infrastructure
+            ipv4_address: 192.168.200.12
+            ipv4_route_tag: 12345
+          - name: Ethernet1/6
+            description: "Access to Site-3-Leaf-1/mgmt0: Net_Infra"
+            mode: access
+            access_vlan: 201
+            mtu: default
+            spanning_tree_portfast: true
+            enable_bpdu_guard: true
+            enabled: true
+          - name: Ethernet1/7
+            description: "Access to Site-3-Leaf-2/mgmt0: Net_Infra"
+            mode: access
+            access_vlan: 201
+            mtu: default
+            spanning_tree_portfast: true
+            enable_bpdu_guard: true
+            enabled: true
+          - name: Ethernet1/8
+            description: "Access to Site-3-BGW1/mgmt0: Net_Infra"
+            mode: access
+            access_vlan: 201
+            mtu: default
+            spanning_tree_portfast: true
+            enable_bpdu_guard: true
+            enabled: true
+      - name: Site-3_BGW1-mgmt
+        serial_number: 9XQ74KMFDNA
+        role: border_gateway
+        management:
+          management_ipv4_address: "10.2.12.24"
+        poap:
+          bootstrap: false
+        interfaces:
+          - name: Ethernet1/3.901
+            description: "VRF-Infrastructure to WAN router"
+            mode: routed_sub
+            vrf: infrastructure
+            dot1q_id: 901
+            mtu: 9000
+            enabled: true
+            ipv4_address: 172.16.0.100/31
+            ipv4_route_tag: 12345
